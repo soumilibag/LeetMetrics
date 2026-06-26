@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ThemeSwitcher } from '@/components/ThemeSwitcher'; 
+import { ThemeSwitcher } from '../components/ThemeSwitcher';
 
 export default function Home() {
   const [username, setUsername] = useState('');

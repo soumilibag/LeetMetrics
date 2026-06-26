@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ThemeSwitcher } from '@/components/ThemeSwitcher'; // Import your new component
+import { ThemeSwitcher } from '../../components/ThemeSwitcher'; // Import your new component
 
 export default function DataDisplay() {
   const [data, setData] = useState<any>(null);

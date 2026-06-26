@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { generatePortfolioAIOverview } from '@/lib/groq-api'
+import { supabase } from '../../../lib/supabase'
+import { generatePortfolioAIOverview } from '../../../lib/groq-api'
 
 const LEETCODE_GRAPHQL_ENDPOINT = 'https://leetcode.com/graphql'
 
