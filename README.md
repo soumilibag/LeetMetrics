@@ -298,17 +298,8 @@ We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.
 - Write meaningful commit messages
 - Add tests for new features
 
-## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
-
-- **LeetCode** for providing the platform and inspiration
-- **Supabase** for excellent backend infrastructure
-- **Groq** for powerful AI capabilities
-- **Next.js** team for the amazing framework
-- **Vercel** for seamless deployment
 
 ## 📞 Support
 
