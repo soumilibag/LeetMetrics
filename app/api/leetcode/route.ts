@@ -45,14 +45,30 @@ export async function POST(request: NextRequest) {
     const lowerUsername = username.toLowerCase().trim()
 
     if (!forceRefresh) {
-      const { data: cachedData } = await supabase
-        .from('leetcode_cache')
-        .select('*')
-        .eq('leetcode_username', lowerUsername)
-        .maybeSingle()
+      console.log(`\n🕵️‍♂️ Checking Supabase cache for string match: "${lowerUsername}"`)
+      
+      try {
+        const { data: cachedData, error: cacheError } = await supabase
+          .from('leetcode_cache') // Verify this matches the exact name in your Supabase table schema
+          .select('*')
+          .eq('leetcode_username', lowerUsername)
+          .maybeSingle();
 
-      if (cachedData) {
-        return NextResponse.json({ success: true, data: cachedData, source: 'database-cache' })
+        if (cacheError) {
+          console.error("❌ Supabase Select Read Error Details:", {
+            message: cacheError.message,
+            details: cacheError.details,
+            hint: cacheError.hint,
+            code: cacheError.code
+          });
+        } else if (cachedData) {
+          console.log(`📦 CACHE HIT: Found existing row record for: ${lowerUsername}`);
+          return NextResponse.json({ success: true, data: cachedData, source: 'database-cache' });
+        } else {
+          console.log(`📭 CACHE MISS: No readable data row matched in DB for: ${lowerUsername}`);
+        }
+      } catch (err: any) {
+        console.error("💥 Critical exception reading table:", err.message);
       }
     }
 
