@@ -1,58 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { generatePortfolioAIOverview } from '@/lib/groq-api'
 
 const LEETCODE_GRAPHQL_ENDPOINT = 'https://leetcode.com/graphql'
 
-// GraphQL Queries covering Profile, Contests, Topics, and Languages
-const USER_PUBLIC_PROFILE_QUERY = `
-  query userPublicProfile($username: String!) {
+const USER_PUBLIC_PROFILE_QUERY = `query userPublicProfile($username: String!) { matchedUser(username: $username) { username profile { ranking realName userAvatar } } }`
+const USER_CONTEST_RANKING_QUERY = `query userContestRankingInfo($username: String!) { userContestRanking(username: $username) { attendedContestsCount rating globalRanking totalParticipants topPercentage } }`
+const SKILL_STATS_QUERY = `query skillStats($username: String!) { matchedUser(username: $username) { tagProblemCounts { advanced { tagName tagSlug problemsSolved } intermediate { tagName tagSlug problemsSolved } fundamental { tagName tagSlug problemsSolved } } } }`
+const LANGUAGE_STATS_QUERY = `query languageStats($username: String!) { matchedUser(username: $username) { languageProblemCount { languageName problemsSolved } } }`
+const RECENT_AC_SUBMISSIONS_QUERY = `query recentAcSubmissions($username: String!, $limit: Int!) { recentAcSubmissionList(username: $username, limit: $limit) { id title titleSlug timestamp } }`
+
+// NEW: Added to capture the submission graph calendar string
+const USER_PROFILE_CALENDAR_QUERY = `
+  query userProfileCalendar($username: String!, $year: Int) {
     matchedUser(username: $username) {
-      username
-      profile {
-        ranking
-        realName
-        userAvatar
+      userCalendar(year: $year) {
+        submissionCalendar
       }
-    }
-  }
-`
-
-const USER_CONTEST_RANKING_QUERY = `
-  query userContestRankingInfo($username: String!) {
-    userContestRanking(username: $username) {
-      attendedContestsCount
-      rating
-      globalRanking
-      totalParticipants
-      topPercentage
-    }
-  }
-`
-
-const SKILL_STATS_QUERY = `
-  query skillStats($username: String!) {
-    matchedUser(username: $username) {
-      tagProblemCounts {
-        advanced { tagName tagSlug problemsSolved }
-        intermediate { tagName tagSlug problemsSolved }
-        fundamental { tagName tagSlug problemsSolved }
-      }
-    }
-  }
-`
-
-const LANGUAGE_STATS_QUERY = `
-  query languageStats($username: String!) {
-    matchedUser(username: $username) {
-      languageProblemCount { languageName problemsSolved }
-    }
-  }
-`
-
-const RECENT_AC_SUBMISSIONS_QUERY = `
-  query recentAcSubmissions($username: String!, $limit: Int!) {
-    recentAcSubmissionList(username: $username, limit: $limit) {
-      id title titleSlug timestamp
     }
   }
 `
@@ -80,7 +44,6 @@ export async function POST(request: NextRequest) {
 
     const lowerUsername = username.toLowerCase().trim()
 
-    // 1. Unless a forced refresh is specified, check the database cache first
     if (!forceRefresh) {
       const { data: cachedData } = await supabase
         .from('leetcode_cache')
@@ -89,44 +52,50 @@ export async function POST(request: NextRequest) {
         .maybeSingle()
 
       if (cachedData) {
-        console.log(`📦 Serving cached data for: ${lowerUsername}`)
         return NextResponse.json({ success: true, data: cachedData, source: 'database-cache' })
       }
     }
 
-    // 2. Fetch all requested fields in parallel from LeetCode
-    console.log(`📡 Fetching live data for: ${lowerUsername}`)
-    const [profile, contest, skills, languages, submissions] = await Promise.allSettled([
+    // Parallel fetch including our calendar graph info
+    const [profile, contest, skills, languages, submissions, calendar] = await Promise.allSettled([
       makeGraphQLRequest(USER_PUBLIC_PROFILE_QUERY, { username: lowerUsername }),
       makeGraphQLRequest(USER_CONTEST_RANKING_QUERY, { username: lowerUsername }),
       makeGraphQLRequest(SKILL_STATS_QUERY, { username: lowerUsername }),
       makeGraphQLRequest(LANGUAGE_STATS_QUERY, { username: lowerUsername }),
-      makeGraphQLRequest(RECENT_AC_SUBMISSIONS_QUERY, { username: lowerUsername, limit: 10 })
+      makeGraphQLRequest(RECENT_AC_SUBMISSIONS_QUERY, { username: lowerUsername, limit: 10 }),
+      makeGraphQLRequest(USER_PROFILE_CALENDAR_QUERY, { username: lowerUsername, year: new Date().getFullYear() })
     ])
 
-    // Validate that the user actually exists on LeetCode
     const profileVal = profile.status === 'fulfilled' ? profile.value?.matchedUser : null
     if (!profileVal) {
       return NextResponse.json({ success: false, error: 'LeetCode user not found' }, { status: 404 })
     }
 
-    const compiledData = {
+    // Temporary data object to send to the AI generation prompt
+    const baseCompiled = {
       leetcode_username: lowerUsername,
       user_profile: profileVal,
       contest_ranking: contest.status === 'fulfilled' ? contest.value?.userContestRanking : null,
       tag_stats: skills.status === 'fulfilled' ? skills.value?.matchedUser?.tagProblemCounts : null,
       language_stats: languages.status === 'fulfilled' ? languages.value?.matchedUser?.languageProblemCount : [],
       recent_submissions: submissions.status === 'fulfilled' ? submissions.value?.recentAcSubmissionList : [],
+      submission_calendar: calendar.status === 'fulfilled' ? calendar.value?.matchedUser?.userCalendar?.submissionCalendar : "{}"
+    }
+
+    // Generate fresh resume summary dynamically
+    const aiInsightText = await generatePortfolioAIOverview(baseCompiled);
+
+    const finalData = {
+      ...baseCompiled,
+      ai_overview: aiInsightText,
       last_synced_at: new Date().toISOString()
     }
 
-    // 3. Upsert data into the table (inserts if unseen, updates if existing)
-    await supabase.from('leetcode_cache').upsert(compiledData, { onConflict: 'leetcode_username' })
+    await supabase.from('leetcode_cache').upsert(finalData, { onConflict: 'leetcode_username' })
 
-    return NextResponse.json({ success: true, data: compiledData, source: 'live-api' })
+    return NextResponse.json({ success: true, data: finalData, source: 'live-api' })
 
   } catch (error: any) {
-    console.error('API Error:', error)
     return NextResponse.json({ success: false, error: error.message }, { status: 500 })
   }
 }
