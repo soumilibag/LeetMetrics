@@ -11,7 +11,7 @@ LeetMetrics is a blazing-fast, AI-powered analytics dashboard built for public L
 * 📊 **Advanced Analytics Dashboard** – View solved problems, topic distributions, language statistics, and contest performance.
 * 🧠 **Topic Analysis** – Categorizes solved problems into core DSA topics with interactive visualizations.
 * 🌙 **Dark & Light Themes** – Beautiful responsive UI with persistent theme switching.
-* 🔄 **Real-Time Sync** – Refresh cached data instantly to fetch the latest LeetCode submissions.
+* 🔄 **Real-Time Sync** – Refresh button for cached data to instantly fetch the latest LeetCode submissions.
 * 📱 **Responsive Design** – Optimized for desktop, tablet, and mobile devices.
 
 ---
@@ -70,20 +70,51 @@ LeetMetrics is a blazing-fast, AI-powered analytics dashboard built for public L
 
 ```text
 LeetMetrics/
-│
 ├── app/
-├── components/
-├── lib/
-├── hooks/
-├── public/
+│   ├── api/
+│   │   └── leetcode/
+│   │       └── route.ts
+│   ├── data/
+│   │   └── page.tsx
+│   ├── error.tsx
+│   ├── extraicon.svg
+│   ├── globals.css
+│   ├── icon.svg
+│   ├── layout.tsx
+│   ├── not-found.tsx
+│   ├── page.tsx
+│   └── providers.tsx
 ├── assets/
-│   ├── overview.png
-│   ├── Dashboard_light.png
 │   ├── Dashboard_black.png
+│   ├── Dashboard_light.png
+│   ├── overview.png
 │   └── stats.png
-│
+├── components/
+│   └── ThemeSwitcher.tsx
+├── lib/
+│   ├── groq-api.ts
+│   └── supabase.ts
+├── middleware.ts
+├── supabase/
+│   └── migrations/
+│       ├── 001_initial_schema.sql
+│       ├── 002_add_profile_columns.sql
+│       ├── 002_add_submit_stats_global.sql
+│       └── 003_add_leetcode_tables.sql
+├── types/
+│   ├── index.ts
+│   └── leetcode.ts
+├── .gitignore
+├── favicon.ico
+├── LICENSE
+├── next-env.d.ts
+├── next.config.js
+├── package-lock.json
 ├── package.json
-└── README.md
+├── postcss.config.js
+├── README.md
+├── tailwind.config.js
+└── tsconfig.json
 ```
 
 ---
@@ -100,7 +131,7 @@ cd LeetMetrics
 ## 2. Install Dependencies
 
 ```bash
-npm install
+npm install --legacy-peer-deps
 ```
 
 ## 3. Create Environment Variables
@@ -155,11 +186,6 @@ Contributions are welcome!
 
 ---
 
-# 📄 License
-
-This project is licensed under the **MIT License**.
-
----
 
 # 👨‍💻 Author
 
