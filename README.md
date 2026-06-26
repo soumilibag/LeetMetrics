@@ -163,6 +163,10 @@ This project is licensed under the **MIT License**.
 
 # 👨‍💻 Author
 
+**Soumili Bag**
+
+GitHub: https://github.com/soumilibag
+
 **Chitrak Betal**
 
 GitHub: https://github.com/chitrak-cs
