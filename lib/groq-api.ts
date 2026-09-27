@@ -41,7 +41,7 @@ Return the text cleanly. Do not wrap the response inside json or markdown code b
 
     const completion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
-      model: "openai/gpt-oss-120b",
+      model: "qwen/qwen3.8-27b",
       temperature: 0.3,
       max_tokens: 600,
     });
