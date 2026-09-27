@@ -41,7 +41,7 @@ Return the text cleanly. Do not wrap the response inside json or markdown code b
 
     const completion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
-      model: "llama-3.3-70b-versatile",
+      model: "llama-3.1-70b-versatile",
       temperature: 0.3,
       max_tokens: 600,
     });
