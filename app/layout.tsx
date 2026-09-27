@@ -12,7 +12,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'LeetLoop - Progress Tracking Tool',
+  title: 'LeetMetrics',
   description: 'Track your LeetCode progress with spaced repetition notifications',
   icons: {
     icon: '/icon.svg',
