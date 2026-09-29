@@ -16,6 +16,32 @@ Built with Next.js, TypeScript, Supabase, and Groq.
 - Force-refresh a profile when the latest LeetCode data is needed.
 - Use a responsive dark or light interface.
 
+## Screenshots
+
+### Landing Page
+
+<p align="center">
+  <img src="./assets/overview.png" alt="LeetMetrics landing page" width="100%">
+</p>
+
+### Dashboard — Light Mode
+
+<p align="center">
+  <img src="./assets/Dashboard_light.png" alt="LeetMetrics dashboard in light mode" width="100%">
+</p>
+
+### Dashboard — Dark Mode
+
+<p align="center">
+  <img src="./assets/Dashboard_black.png" alt="LeetMetrics dashboard in dark mode" width="100%">
+</p>
+
+### Statistics Dashboard
+
+<p align="center">
+  <img src="./assets/stats.png" alt="LeetMetrics statistics dashboard" width="100%">
+</p>
+
 ## How It Works
 
 ```text
